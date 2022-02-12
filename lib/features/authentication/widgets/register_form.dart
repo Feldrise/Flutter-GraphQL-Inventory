@@ -1,4 +1,6 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:graphql_inventory/core/widgets/status_message.dart';
+import 'package:graphql_inventory/features/authentication_graphql.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({
@@ -19,14 +21,26 @@ class _RegisterFormState extends State<RegisterForm> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _passwordConfirmationController = TextEditingController();
 
+  bool _isLoading = false;
+  bool _hasSuccessfullyRegistered = false;
+  String _statusMessage = "";
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Form(
         key: _formKey,
-        child: Column(
+        child: _isLoading ? const ProgressRing() : Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (_statusMessage.isNotEmpty) ...{
+              GQLStatusMessage(
+                message: _statusMessage,
+                type: _hasSuccessfullyRegistered ? GQLStatusMessageType.success : GQLStatusMessageType.error,
+              ),
+              const SizedBox(height: 24,),
+            },
+
             // The page title
             Text(
               "Inscrivez vous",
@@ -110,5 +124,27 @@ class _RegisterFormState extends State<RegisterForm> {
   Future _onRegisterClicked() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() {
+      _isLoading = true;
+    });
+
+    final email = _emailTextController.text;
+    final password = _passwordController.text;
+
+    final hasBeenRegistered = await AuthenticationGraphQL.instance.registerUser(email, password);
+
+    if (hasBeenRegistered) {
+      setState(() {
+        _isLoading = false;
+        _hasSuccessfullyRegistered = true;
+        _statusMessage = "Bravo, vous avez bien été inscrit. Vous pouvez maintenant confirmer votre adresse email avant de vous connecter.";
+      });
+    } else {
+      setState(() {
+        _isLoading = false;
+        _hasSuccessfullyRegistered = false;
+        _statusMessage = "Désolé, nous n'avons pas réussi à vous inscrire...";
+      });
+    }
   }
 }

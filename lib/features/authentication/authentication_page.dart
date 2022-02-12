@@ -21,7 +21,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
         title: Text("Bienvenue"),
       ),
       content: Padding(
-        padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+        padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 32),
         child: Center(
           child: _showRegisterForm ? RegisterForm(onLoginPressed: _onLoginClicked,) : const Text("Hey you want to login")
         ),
