@@ -1,5 +1,6 @@
 
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:graphql_inventory/features/authentication/widgets/login_form.dart';
 import 'package:graphql_inventory/features/authentication/widgets/register_form.dart';
 
 class AuthenticationPage extends StatefulWidget {
@@ -23,7 +24,7 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
       content: Padding(
         padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 32),
         child: Center(
-          child: _showRegisterForm ? RegisterForm(onLoginPressed: _onLoginClicked,) : const Text("Hey you want to login")
+          child: _showRegisterForm ? RegisterForm(onLoginPressed: _onLoginClicked,) : LoginForm(onRegisterPressed: _onRegisterClicked)
         ),
       ),
     );
@@ -32,6 +33,12 @@ class _AuthenticationPageState extends State<AuthenticationPage> {
   void _onLoginClicked() {
     setState(() {
       _showRegisterForm = false;
+    });
+  }
+
+  void _onRegisterClicked() {
+    setState(() {
+      _showRegisterForm = true;
     });
   }
 }

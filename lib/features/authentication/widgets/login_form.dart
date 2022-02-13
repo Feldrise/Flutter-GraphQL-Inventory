@@ -1,48 +1,46 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:graphql_inventory/core/widgets/status_message.dart';
+import 'package:graphql_inventory/features/authentication/app_user_controller.dart';
 import 'package:graphql_inventory/features/authentication/authentication_graphql.dart';
 
-class RegisterForm extends StatefulWidget {
-  const RegisterForm({
+class LoginForm extends ConsumerStatefulWidget {
+  const LoginForm({
     Key? key,
-    required this.onLoginPressed,
+    required this.onRegisterPressed,
   }) : super(key: key);
 
-  final Function() onLoginPressed;
+  final Function() onRegisterPressed;
 
   @override
-  State<RegisterForm> createState() => _RegisterFormState();
+  ConsumerState<LoginForm> createState() => _LoginFormState();
 }
 
-class _RegisterFormState extends State<RegisterForm> {
+class _LoginFormState extends ConsumerState<LoginForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final TextEditingController _emailTextController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _passwordConfirmationController = TextEditingController();
 
   bool _isLoading = false;
-  bool _hasSuccessfullyRegistered = false;
   String _statusMessage = "";
 
   @override
   Widget build(BuildContext context) {
     return Mutation(
       options: MutationOptions(
-        document: gql(mutationAuthenticationRegister),
+        document: gql(mutationAuthenticationLogin),
         onCompleted: (dynamic data) {
-          setState(() {
-            _isLoading = false;
-            _hasSuccessfullyRegistered = true;
-            _statusMessage = "Bravo, vous avez bien été inscrit. Vous pouvez maintenant confirmer votre adresse email avant de vous connecter.";
-          });
+          if (data == null) return;
+          final mapData = data as Map<String, dynamic>;
+
+          ref.read(appUserControllerProvider.notifier).loginUser(mapData["login"] as String);
         },
         onError: (error) {
           setState(() {
             _isLoading = false;
-            _hasSuccessfullyRegistered = false;
-            _statusMessage = "Désolé, nous n'avons pas réussi à vous inscrire...";
+            _statusMessage = "Impossible de vous connecter. Verifiez le mot de passe et l'adresse mail.";
           });
         },
       ),
@@ -55,14 +53,13 @@ class _RegisterFormState extends State<RegisterForm> {
               if (_statusMessage.isNotEmpty) ...{
                 GQLStatusMessage(
                   message: _statusMessage,
-                  type: _hasSuccessfullyRegistered ? GQLStatusMessageType.success : GQLStatusMessageType.error,
                 ),
                 const SizedBox(height: 24,),
               },
 
               // The page title
               Text(
-                "Inscrivez vous",
+                "Se connecter",
                 style: FluentTheme.of(context).typography.subtitle
               ),
               const SizedBox(height: 24,),
@@ -87,25 +84,10 @@ class _RegisterFormState extends State<RegisterForm> {
               TextFormBox(
                 controller: _passwordController,
                 header: "Votre mot de passe",
-                placeholder: "Choisir un mot de passe...",
+                placeholder: "Rentrer votre mot de passe...",
                 obscureText: true,
                 validator: (value) {
                   if ((value ?? "").isEmpty) return "Vous devez rentrer un mot de passe";
-
-                  return null;
-                },
-              ),
-
-              // The confirmation password form
-              TextFormBox(
-                controller: _passwordConfirmationController,
-                header: "Confirmez votre mot de passe",
-                placeholder: "Confirmez votre mot de passe...",
-                obscureText: true,
-                validator: (value) {
-                  if ((value ?? "").isEmpty) return "Vous devez rentrer une confirmation";
-
-                  if (value! != _passwordController.text) return "La confirmation ne correspond pas au mot de passe";
 
                   return null;
                 },
@@ -119,8 +101,8 @@ class _RegisterFormState extends State<RegisterForm> {
                   // The register button
                   Expanded(
                     child: FilledButton(
-                      child: const Text("S'inscrire"),
-                      onPressed: () => _onRegisterClicked(runMutation),
+                      child: const Text("Se connecter"),
+                      onPressed: () => _onLoginClicked(runMutation),
                     ),
                   ),
                   const SizedBox(width: 12,),
@@ -128,8 +110,8 @@ class _RegisterFormState extends State<RegisterForm> {
                   // The login button
                   Expanded(
                     child: Button(
-                      child: const Text("Déjà inscrit ?"),
-                      onPressed: widget.onLoginPressed,
+                      child: const Text("Pas encore inscrit ?"),
+                      onPressed: widget.onRegisterPressed,
                     ),
                   )
                 ],
@@ -141,7 +123,7 @@ class _RegisterFormState extends State<RegisterForm> {
     );
   }
 
-  Future _onRegisterClicked(RunMutation runMutation) async {
+  Future _onLoginClicked(RunMutation runMutation) async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -153,7 +135,7 @@ class _RegisterFormState extends State<RegisterForm> {
 
     runMutation(<String, dynamic>{
       "email": email,
-      "password": password
+      "password": password,
     });
   }
 }
