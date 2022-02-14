@@ -1,6 +1,7 @@
 const queryInventoriesSimplified = r'''
 query getInventoriesSimplified {
   inventories {
+    id,
     name,
     description
   }

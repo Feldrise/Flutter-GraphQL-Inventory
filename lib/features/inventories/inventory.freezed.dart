@@ -22,8 +22,10 @@ Inventory _$InventoryFromJson(Map<String, dynamic> json) {
 class _$InventoryTearOff {
   const _$InventoryTearOff();
 
-  _Inventory call({required String name, required String description}) {
+  _Inventory call(String? id,
+      {required String name, required String description}) {
     return _Inventory(
+      id,
       name: name,
       description: description,
     );
@@ -39,6 +41,7 @@ const $Inventory = _$InventoryTearOff();
 
 /// @nodoc
 mixin _$Inventory {
+  String? get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
 
@@ -52,7 +55,7 @@ mixin _$Inventory {
 abstract class $InventoryCopyWith<$Res> {
   factory $InventoryCopyWith(Inventory value, $Res Function(Inventory) then) =
       _$InventoryCopyWithImpl<$Res>;
-  $Res call({String name, String description});
+  $Res call({String? id, String name, String description});
 }
 
 /// @nodoc
@@ -65,10 +68,15 @@ class _$InventoryCopyWithImpl<$Res> implements $InventoryCopyWith<$Res> {
 
   @override
   $Res call({
+    Object? id = freezed,
     Object? name = freezed,
     Object? description = freezed,
   }) {
     return _then(_value.copyWith(
+      id: id == freezed
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
       name: name == freezed
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -87,7 +95,7 @@ abstract class _$InventoryCopyWith<$Res> implements $InventoryCopyWith<$Res> {
           _Inventory value, $Res Function(_Inventory) then) =
       __$InventoryCopyWithImpl<$Res>;
   @override
-  $Res call({String name, String description});
+  $Res call({String? id, String name, String description});
 }
 
 /// @nodoc
@@ -101,10 +109,15 @@ class __$InventoryCopyWithImpl<$Res> extends _$InventoryCopyWithImpl<$Res>
 
   @override
   $Res call({
+    Object? id = freezed,
     Object? name = freezed,
     Object? description = freezed,
   }) {
     return _then(_Inventory(
+      id == freezed
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String?,
       name: name == freezed
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -120,11 +133,13 @@ class __$InventoryCopyWithImpl<$Res> extends _$InventoryCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$_Inventory with DiagnosticableTreeMixin implements _Inventory {
-  const _$_Inventory({required this.name, required this.description});
+  const _$_Inventory(this.id, {required this.name, required this.description});
 
   factory _$_Inventory.fromJson(Map<String, dynamic> json) =>
       _$$_InventoryFromJson(json);
 
+  @override
+  final String? id;
   @override
   final String name;
   @override
@@ -132,7 +147,7 @@ class _$_Inventory with DiagnosticableTreeMixin implements _Inventory {
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'Inventory(name: $name, description: $description)';
+    return 'Inventory(id: $id, name: $name, description: $description)';
   }
 
   @override
@@ -140,6 +155,7 @@ class _$_Inventory with DiagnosticableTreeMixin implements _Inventory {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty('type', 'Inventory'))
+      ..add(DiagnosticsProperty('id', id))
       ..add(DiagnosticsProperty('name', name))
       ..add(DiagnosticsProperty('description', description));
   }
@@ -149,6 +165,7 @@ class _$_Inventory with DiagnosticableTreeMixin implements _Inventory {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _Inventory &&
+            const DeepCollectionEquality().equals(other.id, id) &&
             const DeepCollectionEquality().equals(other.name, name) &&
             const DeepCollectionEquality()
                 .equals(other.description, description));
@@ -157,6 +174,7 @@ class _$_Inventory with DiagnosticableTreeMixin implements _Inventory {
   @override
   int get hashCode => Object.hash(
       runtimeType,
+      const DeepCollectionEquality().hash(id),
       const DeepCollectionEquality().hash(name),
       const DeepCollectionEquality().hash(description));
 
@@ -172,12 +190,14 @@ class _$_Inventory with DiagnosticableTreeMixin implements _Inventory {
 }
 
 abstract class _Inventory implements Inventory {
-  const factory _Inventory(
+  const factory _Inventory(String? id,
       {required String name, required String description}) = _$_Inventory;
 
   factory _Inventory.fromJson(Map<String, dynamic> json) =
       _$_Inventory.fromJson;
 
+  @override
+  String? get id;
   @override
   String get name;
   @override

@@ -7,7 +7,7 @@ part 'inventory.g.dart';
 @immutable
 @freezed
 class Inventory with _$Inventory {
-  const factory Inventory({required String name, required String description}) = _Inventory;
+  const factory Inventory(String? id, {required String name, required String description}) = _Inventory;
 
   factory Inventory.fromJson(Map<String, dynamic> json) => _$InventoryFromJson(json);
 }

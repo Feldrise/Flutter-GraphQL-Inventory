@@ -3,7 +3,8 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:graphql_inventory/core/widgets/status_message.dart';
 import 'package:graphql_inventory/features/inventories/inventories_graphql.dart';
 import 'package:graphql_inventory/features/inventories/inventory.dart';
-import 'package:graphql_inventory/features/inventories/widget/inventory_dialog.dart';
+import 'package:graphql_inventory/features/inventories/widgets/inventory_dialog.dart';
+import 'package:graphql_inventory/features/items/items_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -101,11 +102,17 @@ class _HomePageState extends State<HomePage> {
 
                           return TappableListTile( 
                             leading: const CircleAvatar(
-                            child: Icon(FluentIcons.cube_shape),
+                            child: Icon(FluentIcons.bulleted_list2),
                             ),
                             title: Text(inventory.name),
                             subtitle: Text(inventory.description),
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.of(context).push<dynamic>(
+                                FluentPageRoute<dynamic>(
+                                  builder: (context) => ItemsPage(inventoryId: inventory.id!)
+                                )
+                              );
+                            },
                           );
                         }
                       ),

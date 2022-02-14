@@ -101,6 +101,7 @@ class _InventoryDialogState extends State<InventoryDialog> {
     if (!_formKey.currentState!.validate()) return;
 
     final inventory = Inventory(
+      null,
       name: _nameTextController.text,
       description: _descriptionTextController.text 
     );
