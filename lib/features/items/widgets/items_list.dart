@@ -5,9 +5,11 @@ class ItemsList extends StatelessWidget {
   const ItemsList({
     Key? key,
     required this.items,
+    this.controller
   }) : super(key: key);
 
   final List<Item> items;
+  final ScrollController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +30,8 @@ class ItemsList extends StatelessWidget {
     }
 
     return ListView.builder(
+      key: const PageStorageKey<String>("items_key"),
+      controller: controller,
       itemCount: items.length,
       itemBuilder: (context, index) => TappableListTile(
         leading: const CircleAvatar(

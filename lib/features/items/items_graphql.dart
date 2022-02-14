@@ -1,11 +1,20 @@
 const queryInventoryWithItems = r'''
-query getInventoryWithItems($inventoryID: ID!) {
+query getInventoryWithItems($inventoryID: ID!, $number: Int!, $after: ID) {
   inventory(id: $inventoryID) {
     name,
     description,
-    items {
-      name,
-      quantity
+    items(first: $number, after: $after) {
+      edges {
+        node {
+          name,
+          quantity
+        }
+      },
+      pageInfo {
+        startCursor,
+        endCursor,
+        hasNextPage
+      }
     }
   }
 }

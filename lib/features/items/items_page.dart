@@ -20,9 +20,13 @@ class ItemsPage extends StatefulWidget {
 }
 
 class _ItemsPageState extends State<ItemsPage> {
+  final ScrollController _scrollController = ScrollController();
+
   bool _isSuccess = false;
   bool _shouldRefetch = false;
   String _statusMessage = "";
+
+  bool _hasNextPage = true;
 
   @override
   Widget build(BuildContext context) {
@@ -57,12 +61,14 @@ class _ItemsPageState extends State<ItemsPage> {
             options: QueryOptions(
               document: gql(queryInventoryWithItems),
               variables: <String, dynamic>{
-                "inventoryID": widget.inventoryId
+                "inventoryID": widget.inventoryId,
+                "number": 15,
+                "after": null
               },
             ),
             builder: (queryResult, {fetchMore, refetch}) {
-              if (_shouldRefetch) {
-                refetch!();
+              if (_shouldRefetch && refetch != null) {
+                refetch();
                 _shouldRefetch = false;
               }
 
@@ -79,16 +85,20 @@ class _ItemsPageState extends State<ItemsPage> {
                 );
               }
 
-              if (queryResult.isLoading) {
+              if (queryResult.isLoading && queryResult.data == null) {
                 return const Center(child: ProgressRing(),);
               }
 
               final Inventory inventory = Inventory.fromJson(queryResult.data!["inventory"] as Map<String, dynamic>);
-              final List mapItems = queryResult.data!["inventory"]["items"] as List;
+              final List mapItems = queryResult.data!["inventory"]["items"]["edges"] as List;
+              final Map pageInfo = queryResult.data!["inventory"]["items"]["pageInfo"] as Map;
               final List<Item> items = [];
 
+              final FetchMoreOptions fetchMoreOptions = _createFetchMoreOptions(pageInfo["endCursor"] as String? ?? "");
+              _hasNextPage = pageInfo["hasNextPage"] as bool? ?? false;
+
               for (final mapItem in mapItems) {
-                items.add(Item.fromJson(mapItem as Map<String, dynamic>));
+                items.add(Item.fromJson(mapItem["node"] as Map<String, dynamic>));
               }
               
               return Column(
@@ -114,7 +124,29 @@ class _ItemsPageState extends State<ItemsPage> {
                   Text(inventory.description, style: FluentTheme.of(context).typography.bodyLarge,),
 
                   // The items list
-                  Expanded(child: ItemsList(items: items,)),
+                  Expanded(
+                    child: NotificationListener(
+                      onNotification: (notification) {
+                        if (
+                          notification is ScrollEndNotification &&
+                          _scrollController.position.pixels >= _scrollController.position.maxScrollExtent
+                        ) {
+                          if (_hasNextPage && fetchMore != null) fetchMore(fetchMoreOptions);
+                        }
+
+                        return true;
+                      },
+                      child: ItemsList(
+                        controller: _scrollController,
+                        items: items,
+                      )
+                    )
+                  ),
+                  const SizedBox(height: 12,),
+
+                  // Circular progress indicator if we load what's next
+                  if (queryResult.isLoading) 
+                    const Center(child: ProgressRing(),),
 
                   // The add button
                   FilledButton(
@@ -127,6 +159,23 @@ class _ItemsPageState extends State<ItemsPage> {
           ),
         )
       ),
+    );
+  }
+
+  FetchMoreOptions _createFetchMoreOptions(String fetchMoreCursor) {
+    return FetchMoreOptions(
+      variables: <String, dynamic>{
+        "after": fetchMoreCursor
+      },
+      updateQuery: (previousResultData, fetchMoreResultData) {
+        final List<dynamic> items = <dynamic>[
+          ...previousResultData?["inventory"]["items"]["edges"] as List<dynamic>? ?? <dynamic>[],
+          ...fetchMoreResultData?["inventory"]["items"]["edges"] as List<dynamic>? ?? <dynamic>[],
+        ];
+
+        fetchMoreResultData?["inventory"]["items"]["edges"] = items;
+        return fetchMoreResultData ?? <String, dynamic>{};
+      },
     );
   }
 
